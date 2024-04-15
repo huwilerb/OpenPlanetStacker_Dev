@@ -1,2 +1,2 @@
 # OpenPlanetStacker_Dev
-Test ideas for OpenPlanetStacker
+Test playground for OpenPlanetStacker
