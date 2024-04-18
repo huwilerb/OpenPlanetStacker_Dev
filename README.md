@@ -18,3 +18,4 @@ Test playground for OpenPlanetStacker
 - AVI files implementation [doc](doc/encoding/avi.pdf)
 ## Knowhow
 - Image stacking algorithms [cloudy nights forum](https://www.cloudynights.com/topic/285209-image-stacking-algorithms/)
+- Siril registration [documentation](https://siril.readthedocs.io/en/latest/preprocessing/registration.html#registration-process)
