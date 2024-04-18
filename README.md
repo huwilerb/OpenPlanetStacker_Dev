@@ -21,5 +21,7 @@ Test playground for OpenPlanetStacker
 - Siril registration [documentation](https://siril.readthedocs.io/en/latest/preprocessing/registration.html#registration-process)
 - Astrophysics source code library [ASCL.net](http://www.ascl.net/code/all)
 
+### Registration
+- Automatic Extraction of Ellipsoidal Features for Planetary Image Registration [scihub](https://sci-hub.se/10.1109/lgrs.2011.2161263)
 ## Similar projects
 - [lxnstack](https://github.com/mauritiusdadd/lxnstack) (8 years old, not maintened)
