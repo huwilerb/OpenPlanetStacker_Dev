@@ -16,3 +16,5 @@ Test playground for OpenPlanetStacker
 ## Doc
 - SER files implementation [doc](doc/encoding/SER%20Doc%20V3b.pdf)
 - AVI files implementation [doc](doc/encoding/avi.pdf)
+## Knowhow
+- Image stacking algorithms [cloudy nights forum](https://www.cloudynights.com/topic/285209-image-stacking-algorithms/)
