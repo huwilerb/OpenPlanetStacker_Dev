@@ -25,13 +25,13 @@ The stacking process follow this specific workflow
 ```mermaid
 flowchart LR
   A(Raw file) --> B{Evaluate quality and filter}
-  Z((params)) --> B
+  Z((params)) -.-> B
   B --> C(Selected frames)
   C --> D{Register images}
-  Y((params)) --> D
+  Y((params)) -.-> D
   D --> E(Selected frames)
   D --> F(Registration parameters)
-  X((params)) --> G
+  X((params)) -.-> G
   E --> G{Stacking}
   F --> G
   G --> H[Final image]
