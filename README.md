@@ -19,3 +19,7 @@ Test playground for OpenPlanetStacker
 ## Knowhow
 - Image stacking algorithms [cloudy nights forum](https://www.cloudynights.com/topic/285209-image-stacking-algorithms/)
 - Siril registration [documentation](https://siril.readthedocs.io/en/latest/preprocessing/registration.html#registration-process)
+- Astrophysics source code library [ASCL.net](http://www.ascl.net/code/all)
+
+## Similar projects
+- [lxnstack](https://github.com/mauritiusdadd/lxnstack) (8 years old, not maintened)
