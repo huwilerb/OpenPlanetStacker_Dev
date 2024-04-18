@@ -14,4 +14,5 @@ Test playground for OpenPlanetStacker
 - Linux SER player [repo](https://github.com/cgarry/ser-player)
 
 ## Doc
-- SER file doc
+- SER files implementation [doc](doc/encoding/SER%20Doc%20V3b.pdf)
+- AVI files implementation [doc](doc/encoding/avi.pdf)
