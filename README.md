@@ -102,3 +102,6 @@ flowchart LR
 
 # Ideas
 - Create a demo vesrion with only python and [streamlit](https://streamlit.io/)
+
+# Special thanks 
+Thanks to my girlfriend, who takes care of everything at home while I code when I'm supposed to be studying
