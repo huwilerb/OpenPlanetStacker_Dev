@@ -1,23 +1,26 @@
 # OpenPlanetStacker Dev playground
 Test playground for OpenPlanetStacker
+- [OpenPlanetStacker Dev playground](#openplanetstacker-dev-playground)
 - [Workflow](#workflow)
 - [Requirements](#requirements)
-  * [Input](#input)
-  * [Frame selection](#frame-selection)
-  * [Registration](#registration)
-  * [Stacking](#stacking)
-  * [Final Image](#final-image)
-  * [Future Gui](#future-gui)
+  - [Input](#input)
+  - [Frame selection](#frame-selection)
+  - [Registration](#registration)
+  - [Stacking](#stacking)
+  - [Final Image](#final-image)
+  - [Future Gui](#future-gui)
 - [Challenges](#challenges)
-  * [Registration](#registration-1)
-  * [Stacking](#stacking-1)
+  - [Registration](#registration-1)
+  - [Stacking](#stacking-1)
 - [Documentation](#documentation)
-  * [Usefull tools](#usefull-tools)
-  * [Doc](#doc)
-  * [Knowhow](#knowhow)
-    + [Registration](#registration-2)
-  * [Similar projects](#similar-projects)
+  - [Usefull tools](#usefull-tools)
+  - [Doc](#doc)
+  - [Knowhow](#knowhow)
+    - [Registration](#registration-2)
+  - [Similar projects](#similar-projects)
 - [Ideas](#ideas)
+- [Run the streamlit demo app](#run-the-streamlit-demo-app)
+- [Special thanks](#special-thanks)
 
 
 # Workflow 
@@ -102,6 +105,22 @@ flowchart LR
 
 # Ideas
 - Create a demo vesrion with only python and [streamlit](https://streamlit.io/)
+
+# Run the streamlit demo app 
+
+Optional: build a virtual env and install everything in it 
+```
+python3 -m venv .env
+source .env/bin/activate
+
+# install dependencies
+pip install -r requirements.txt
+```
+Run the app 
+```
+streamlit run app/app.py
+```
+You don't need to run the previous line to apply changes from your code in the app, simply rerun the webapp (upper right corner rerun or type `r` on the webpage)
 
 # Special thanks 
 Thanks to my girlfriend, who takes care of everything at home while I code when I'm supposed to be studying
