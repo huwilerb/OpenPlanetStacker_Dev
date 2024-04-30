@@ -3,9 +3,9 @@ import streamlit as st
 from utils.custom_components import mermaid
 
 # session states init
-if 'registred_files' not in st.session_state.keys():
-    st.session_state.registred_files = []
-    st.session_state.registred_stats = {}
+if 'wk_file' not in st.session_state.keys():
+    st.session_state.wk_file = None
+    st.session_state.wk_data = None
 
 # Layout and page settings
 st.set_page_config(layout="wide")

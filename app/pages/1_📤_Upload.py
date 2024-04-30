@@ -1,89 +1,71 @@
 import streamlit as st 
-import uuid 
 import pandas as pd 
-import shutil
 
 from pathlib import Path
-from st_aggrid import AgGrid 
-from utils.ser_writer import Writer
+
+from utils.ser_reader import reader 
 
 
-# Static paths 
-TEMP = Path(__file__).resolve().parents[1].joinpath('temp')
+# Variables
+HISTORY = Path(__file__).resolve().parents[1].joinpath("temp").joinpath("files_history.txt")
 
-# generic types 
-pathlikeObject = str | Path 
+# Page settings 
+st.set_page_config(layout='wide')
 
-# Functions 
-def get_files(path: pathlikeObject) -> pd.DataFrame:
-    if isinstance(path, str):
-        path = Path(path).resolve() 
+# callbacks
+def check_path():
+    p = Path(st.session_state.path_str)
+    if not p.exists():
+        st.error("Check the path, the file do not exist", icon="😵")
+    else: 
+        if p.suffix.lower() in [".ser"]:
+            st.success("This file exists", icon="✅")
+        else: 
+            st.warning("This file type is not supported", icon="⚠️")
+
+def set_file():
+    st.session_state.wk_file = reader(st.session_state.path_str)
+    update_txt(HISTORY, st.session_state.path_str)
+      
+# Functions
+def read_txt(fname: str | Path) -> list: 
+    if not isinstance(fname, Path):
+        fname = Path(fname)
+    if not fname.exists(): 
+        raise FileNotFoundError
+    with fname.open('r') as fp: 
+        data = fp.readlines()
+    return list(map(lambda x: x.strip(), data)) 
+
+def update_txt(fname: str | Path, text: str) -> None: 
+    if not isinstance(fname, Path):
+        fname = Path(fname)
+    if not fname.exists(): 
+        raise FileNotFoundError
+    history = read_txt(fname)
+    history.append(text)
+    with fname.open("w") as fp: 
+        fp.write("\n".join(history))
+
+# page 
+upload_col, exifs_col = st.columns([2, 1])
+
+with upload_col:
+    file_options = [None] + read_txt(HISTORY)
+    st.markdown("Upload a file")
+    st.text_input("Past your file location", key='path_str', on_change=check_path)
+    st.write("or")
+    st.selectbox("Load recent file", options=file_options)
+    p = Path(st.session_state.path_str)
+    enable = p.exists() and p.suffix.lower() in [".ser"] 
+    register_file = st.button("Use this file !", disabled=not enable, on_click=set_file)
     
-    if not path.exists(): 
-        raise FileNotFoundError()
-    
-    data = list(map(get_infos, [f for f in path.iterdir()]))
-    df = pd.DataFrame(data, columns=['path', 'filename', 'filetype', 'size', 'selected'])
-    df.set_index('path', inplace=True)
-    
-    return df
 
 
-def get_infos(path: Path) -> list: 
-    v_files = [f for f in path.iterdir() if f.suffix.lower() in ['.ser', '.avi']]
-    if len(v_files) != 1: 
-        return []
-    v_file = v_files[0]
-    str_path = str(v_file)
-    filename = v_file.name 
-    filetype = v_file.suffix
-    size = round(v_file.stat().st_size /1e9, 2)
-    return [str_path, filename, filetype, size, False]
-
-def clear_selection() -> None: 
-    st.session_state.registred_files = []
-    st.session_state.registred_status = {}
-    
-def reset_all() -> None: 
-    for f in TEMP.iterdir():
-        shutil.rmtree(str(f), ignore_errors=True)
-
-# Sidebar 
-clear_selection_b = st.sidebar.button("Clear selection")
-if clear_selection_b: 
-    clear_selection()
-
-reset_all_b = st.sidebar.button("Reset all")
-if reset_all_b:
-    reset_all()
+with exifs_col: 
+    if st.session_state.wk_file is None: 
+        st.write("No file selected")
+    else:
+        st.write(st.session_state.wk_file.header.__dict__)
 
 
-# App 
-st.title("Open planet stacker playground")
-st.header("Load files")
-st.subheader("Use existing file(s) in memory")
-data = get_files(TEMP)
-df = st.data_editor(data, hide_index=True)
-apply_selection = st.button("Apply selection")
-if apply_selection:
-    files = df[df['selected'] == True].index.to_list()[0]  # TO Fixe, take multiple files 
-    st.session_state.registred_files.append(files)
-    st.session_state.registred_status[files] = {'name': files}
-    st.success("File successfully added")
-
-
-load_new = st.expander("Register new file", expanded=False)
-with load_new: 
-    st.markdown("Load a new file for processing. Only `ser` files supported now")
-    video = st.file_uploader("uploader", type=['.ser'])
-    enable_register = video is None
-    register_file = st.button("Register file", disabled=enable_register)
-    if register_file: 
-        if video is not None:             
-            with st.spinner("Registering file"):
-                w = Writer(video.getbuffer())
-                fileid = str(uuid.uuid4())
-                saving_path = TEMP.joinpath(fileid)
-                saving_path.mkdir()
-                filename = saving_path.joinpath(video.name)
-                w.write(filename=filename)
