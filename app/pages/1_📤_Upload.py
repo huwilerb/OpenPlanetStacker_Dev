@@ -24,15 +24,21 @@ def check_path():
             st.warning("This file type is not supported", icon="⚠️")
 
 def set_file():
-    st.session_state.wk_file = reader(st.session_state.path_str)
-    update_txt(HISTORY, st.session_state.path_str)
+    if st.session_state.path_str_s is not None: 
+        p = st.session_state.path_str_s
+    else: 
+        p = st.session_state.path_str
+        update_txt(HISTORY, st.session_state.path_str)
+        
+    st.session_state.wk_file = reader(p)
+    
       
 # Functions
 def read_txt(fname: str | Path) -> list: 
     if not isinstance(fname, Path):
         fname = Path(fname)
     if not fname.exists(): 
-        raise FileNotFoundError
+        return []
     with fname.open('r') as fp: 
         data = fp.readlines()
     return list(map(lambda x: x.strip(), data)) 
@@ -40,11 +46,11 @@ def read_txt(fname: str | Path) -> list:
 def update_txt(fname: str | Path, text: str) -> None: 
     if not isinstance(fname, Path):
         fname = Path(fname)
-    if not fname.exists(): 
-        raise FileNotFoundError
+    if not fname.parent.exists(): 
+        fname.parent.mkdir(parents=True)
     history = read_txt(fname)
     history.append(text)
-    with fname.open("w") as fp: 
+    with fname.open("w+") as fp: 
         fp.write("\n".join(history))
 
 # page 
@@ -55,9 +61,9 @@ with upload_col:
     st.markdown("Upload a file")
     st.text_input("Past your file location", key='path_str', on_change=check_path)
     st.write("or")
-    st.selectbox("Load recent file", options=file_options)
+    st.selectbox("Load recent file", options=file_options, key="path_str_s")
     p = Path(st.session_state.path_str)
-    enable = p.exists() and p.suffix.lower() in [".ser"] 
+    enable = (p.exists() and p.suffix.lower() in [".ser"]) or st.session_state.path_str_s is not None
     register_file = st.button("Use this file !", disabled=not enable, on_click=set_file)
     
 
