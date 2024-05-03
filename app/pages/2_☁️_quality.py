@@ -19,6 +19,9 @@ if st.session_state.get('visible_frame_idx', None) is  None:
 
 if st.session_state.get('is_playing', None) is None: 
     st.session_state.is_playing = 0
+    
+if st.session_state.get('excluded', None) is None: 
+    st.session_state.excluded = []
         
 # Functions
 def is_first() -> bool:
@@ -38,7 +41,7 @@ def show_frame() -> None:
         color_img_v = (color_img * 255.0/color_img.max()).astype(int)
         st.image(color_img_v, 
                  use_column_width=True, 
-                 caption=st.session_state.visible_frame_idx)
+                 width=1400)
     
 # Callbacks
 def previous_frame() -> None:
@@ -67,53 +70,89 @@ def slider_update() -> None:
     
     if s_frame != frame:
         st.session_state.visible_frame_idx = s_frame
+
+def exclude() -> None: 
+    frame = st.session_state.visible_frame_idx
+    excluded = st.session_state.excluded
+    if frame in excluded:
+        return 
+    excluded.append(frame)
+    st.session_state.excluded = sorted(excluded)     
     
+def rehab() -> None: 
+    frame = st.session_state.rehab_idx
+    if frame is None: 
+        return 
+    st.session_state.excluded.remove(frame)
 
 # page 
 st.title("Frames quality evaluation")
 
-col_space, col_viewer, col_eval = st.columns([1, 5, 2])
+col_viewer, col_eval = st.columns([8, 4])
 
-with col_space:
-    st.header("Ser player")
+
+st.sidebar.header("Ser player")
+
+first_f, prev_f, play_s, next_f, last_f = st.sidebar.columns([1, 1, 2, 1, 1])
+with first_f:
+    st.button("⏮", 
+              use_container_width=True, 
+              on_click=first_frame, 
+              disabled=is_first())
+with prev_f:
+    st.button("⬅️", 
+              use_container_width=True, 
+              on_click=previous_frame, 
+              disabled=is_first())
+with play_s:    
+    st.button("⏯", 
+              use_container_width=True, 
+              type="secondary", 
+              on_click=update_play)
+with next_f:
+    st.button("➡️ ", 
+              use_container_width=True, 
+              on_click=next_frame, 
+              disabled=is_last())
+with last_f: 
+    st.button("⏭", 
+              use_container_width=True, 
+              on_click=last_frame, 
+              disabled=is_last())
+
+st.sidebar.slider("frames",  
+                  min_value=0, 
+                  max_value=st.session_state.wk_file.header.frameCount - 1, 
+                  key='slider_frame',
+                  on_change=slider_update,
+                  value=st.session_state.visible_frame_idx, 
+                  label_visibility='collapsed')
+
+st.sidebar.divider()
+
+exlude_dd = st.sidebar.expander("Frame exclusion", expanded=False)
+
+with exlude_dd:
+    left, _ = exlude_dd.columns([4, 6])
+    with left: 
+        st.button("Exlude", 
+                  on_click=exclude, 
+                  use_container_width=True)        
     
-    first_f, prev_f, play_s, next_f, last_f = st.columns([1, 1, 2, 1, 1])
-    with first_f:
-        st.button("⏮", 
-                  use_container_width=True, 
-                  on_click=first_frame, 
-                  disabled=is_first())
-    with prev_f:
-        st.button("⬅️", 
-                  use_container_width=True, 
-                  on_click=previous_frame, 
-                  disabled=is_first())
-    with play_s:    
-        st.button("⏯", 
-                  use_container_width=True, 
-                  type="secondary", 
-                  on_click=update_play)
-    with next_f:
-        st.button("➡️ ", 
-                  use_container_width=True, 
-                  on_click=next_frame, 
-                  disabled=is_last())
-    with last_f: 
-        st.button("⏭", 
-                  use_container_width=True, 
-                  on_click=last_frame, 
-                  disabled=is_last())
+    left, right = exlude_dd.columns([4, 6])
+    with left:
+        st.button("Rehab", 
+                  on_click=rehab, 
+                  use_container_width=True)
+    with right:
+        st.selectbox(label='test', 
+                     options=st.session_state.excluded, 
+                     label_visibility='collapsed', 
+                     key='rehab_idx')
     
-    st.slider("frames",  
-              min_value=0, 
-              max_value=st.session_state.wk_file.header.frameCount - 1, 
-              key='slider_frame',
-              on_change=slider_update,
-              value=st.session_state.visible_frame_idx)
 
 with col_viewer:    
-    st.header("")
-    st.write("")
+    st.subheader("View")
     if st.session_state.is_playing:
         while not is_last():
             st.session_state.visible_frame_idx += 1
@@ -127,5 +166,7 @@ with col_viewer:
 
 with col_eval:
     st.header("Quality metric")
+    
+
     
         
