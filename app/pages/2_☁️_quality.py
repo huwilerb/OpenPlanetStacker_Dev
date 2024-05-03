@@ -6,6 +6,8 @@ import time
 color_mapping = {
     8: cv.COLOR_BAYER_RGGB2RGB, 
     9: cv.COLOR_BAYER_GBRG2RGB, 
+    10: cv.COLOR_BAYER_GBRG2RGB, 
+    11: cv.COLOR_BAYER_BGGR2RGB, 
 }
 
 # Page settings 
@@ -27,10 +29,16 @@ def is_last() -> bool:
     return st.session_state.visible_frame_idx == last_idx - 1
 
 def show_frame() -> None: 
-    img = st.session_state.wk_file.getImg(st.session_state.visible_frame_idx)
-    color_img = cv.cvtColor(img, cv.COLOR_BAYER_RGGB2RGB)
-    color_img_v = (color_img * 255.0/color_img.max()).astype(int)
-    st.image(color_img_v, use_column_width=True)
+    clr_map = color_mapping.get(st.session_state.wk_file.header.colorID, None)
+    if clr_map is None: 
+        st.error("Can't apply debayer")
+    else:
+        img = st.session_state.wk_file.getImg(st.session_state.visible_frame_idx)
+        color_img = cv.cvtColor(img, clr_map)
+        color_img_v = (color_img * 255.0/color_img.max()).astype(int)
+        st.image(color_img_v, 
+                 use_column_width=True, 
+                 caption=st.session_state.visible_frame_idx)
     
 # Callbacks
 def previous_frame() -> None:
@@ -68,26 +76,40 @@ col_space, col_viewer, col_eval = st.columns([1, 5, 2])
 
 with col_space:
     st.header("Ser player")
+    
     first_f, prev_f, play_s, next_f, last_f = st.columns([1, 1, 2, 1, 1])
     with first_f:
-        st.button("⏮", use_container_width=True, on_click=first_frame, disabled=is_first())
+        st.button("⏮", 
+                  use_container_width=True, 
+                  on_click=first_frame, 
+                  disabled=is_first())
     with prev_f:
-        st.button("⬅️", use_container_width=True, on_click=previous_frame, disabled=is_first())
+        st.button("⬅️", 
+                  use_container_width=True, 
+                  on_click=previous_frame, 
+                  disabled=is_first())
     with play_s:    
-        st.button("⏯", use_container_width=True, type="secondary", on_click=update_play)
+        st.button("⏯", 
+                  use_container_width=True, 
+                  type="secondary", 
+                  on_click=update_play)
     with next_f:
-        st.button("➡️ ", use_container_width=True, on_click=next_frame, disabled=is_last())
+        st.button("➡️ ", 
+                  use_container_width=True, 
+                  on_click=next_frame, 
+                  disabled=is_last())
     with last_f: 
-        st.button("⏭", use_container_width=True, on_click=last_frame, disabled=is_last())
+        st.button("⏭", 
+                  use_container_width=True, 
+                  on_click=last_frame, 
+                  disabled=is_last())
+    
     st.slider("frames",  
               min_value=0, 
               max_value=st.session_state.wk_file.header.frameCount - 1, 
               key='slider_frame',
               on_change=slider_update,
               value=st.session_state.visible_frame_idx)
-    
-    first_c, _, last_c = st.columns([1, 5, 1])
-
 
 with col_viewer:    
     st.header("")
