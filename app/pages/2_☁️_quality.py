@@ -1,6 +1,8 @@
 import streamlit as st 
 import cv2 as cv 
 import time
+import numpy as np 
+from typing import Optional
 
 # Global variables
 color_mapping = {
@@ -31,17 +33,58 @@ def is_last() -> bool:
     last_idx = st.session_state.wk_file.header.frameCount
     return st.session_state.visible_frame_idx == last_idx - 1
 
-def show_frame() -> None: 
+def get_img() -> np.array:
     clr_map = color_mapping.get(st.session_state.wk_file.header.colorID, None)
     if clr_map is None: 
         st.error("Can't apply debayer")
-    else:
-        img = st.session_state.wk_file.getImg(st.session_state.visible_frame_idx)
-        color_img = cv.cvtColor(img, clr_map)
-        color_img_v = (color_img * 255.0/color_img.max()).astype(int)
-        st.image(color_img_v, 
-                 use_column_width=True, 
-                 width=1400)
+        return 
+    
+    img = st.session_state.wk_file.getImg(st.session_state.visible_frame_idx)
+    color_img = cv.cvtColor(img, clr_map)
+    color_img_v = (color_img * 255.0/color_img.max()).astype(np.uint8)
+    return color_img_v
+
+def watermark(img: np.array, icon: str) -> np.array:
+    icon_path = st.session_state.icons.joinpath(icon)
+    if not icon_path.exists():
+        st.error(f"Icon file do not exists: {icon}")
+        return img 
+    icon_img = cv.imread(str(icon_path))
+    h_icon, w_icon, _ = icon_img.shape
+    h_img, w_img, _ = img.shape
+    center_x = int(w_img/2)
+    center_y = int(h_img/2)
+    top_y = center_y - int(h_icon/2)
+    left_x = center_x - int(w_icon/2)
+    bottom_y = top_y + h_icon
+    right_x = left_x + w_icon
+
+
+    roi = img[top_y:bottom_y, left_x:right_x]
+    res = cv.addWeighted(roi, 1, icon_img, 0.5, 0)
+    img[top_y:bottom_y, left_x:right_x] = res
+    
+    return img  
+    
+    
+
+def show_frame() -> None: 
+    img = get_img()
+    show = True 
+    if img is None:
+        st.error("Can't show frame")
+        return 
+    
+    if st.session_state.visible_frame_idx in st.session_state.excluded:
+        if st.session_state.excl_apply_watermark:
+            img = watermark(img, 'close.png')
+        if st.session_state.excl_hide_frames:
+            show = False
+
+    if show:
+        st.image(img, 
+                use_column_width=True, 
+                width=1400)
     
 # Callbacks
 def previous_frame() -> None:
@@ -84,6 +127,9 @@ def rehab() -> None:
     if frame is None: 
         return 
     st.session_state.excluded.remove(frame)
+    
+def reset_exclude() -> None:
+    st.session_state.excluded = []
 
 # page 
 st.title("Frames quality evaluation")
@@ -137,18 +183,33 @@ with exlude_dd:
     with left: 
         st.button("Exlude", 
                   on_click=exclude, 
-                  use_container_width=True)        
+                  use_container_width=True, 
+                  type="primary")        
     
     left, right = exlude_dd.columns([4, 6])
     with left:
         st.button("Rehab", 
                   on_click=rehab, 
-                  use_container_width=True)
+                  use_container_width=True, 
+                  type="primary")
     with right:
         st.selectbox(label='test', 
                      options=st.session_state.excluded, 
                      label_visibility='collapsed', 
                      key='rehab_idx')
+        
+    st.toggle("Watermark excluded frames", 
+              key="excl_apply_watermark", 
+              value=True)
+    
+    st.toggle("Hide exluded frames", 
+              key="excl_hide_frames", 
+              value=False)
+    
+    st.button("Reset exlusion list", 
+              on_click=reset_exclude, 
+              use_container_width=True, 
+              type="secondary")
     
 
 with col_viewer:    
