@@ -1,11 +1,23 @@
 import streamlit as st 
 
 from utils.custom_components import mermaid
+from pathlib import Path
+
+# Variables
+APP_DIR = Path(__file__).resolve().parent
+TEMP = APP_DIR.joinpath('temp')
+
+# Folder initialization 
+if not TEMP.exists(): 
+    TEMP.mkdir()
 
 # session states init
 if 'wk_file' not in st.session_state.keys():
     st.session_state.wk_file = None
     st.session_state.wk_data = None
+
+if 'icons' not in st.session_state.keys():
+    st.session_state.icons = APP_DIR.joinpath('assets').joinpath('icons')
 
 # Layout and page settings
 st.set_page_config(layout="wide")
